@@ -24,7 +24,7 @@ P_Min = 1/n
 P_Max = 1
 P_Num = 10
 P_List = np.linspace(P_Min,P_Max,P_Num)#0.08#0.025#50/n
-
+P_List = P_List[:-1]
 
 #Time taken for sim to run
 T = 2000000#00
@@ -36,7 +36,7 @@ F_step = 0.1
 F_List = np.arange(F_Min,F_Max,F_step)
 
 
-Repeats = 20
+Repeats = 40
 
 #PicTime is the time steps of the snapshorts of the system
 PicTime = T/100
