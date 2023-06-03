@@ -17,7 +17,7 @@ shutil.copy("Params.py",SaveDirName)
 plist = []
 
 for C in CList:
-    p=subprocess.Popen(['nice','-n','19','python','Script.py','-C',str(C)])
+    p=subprocess.Popen(['nice','-n','18','python','Script.py','-C',str(C)])
     plist.append(p)
 
 for p in plist:

@@ -28,7 +28,7 @@ C = args.MeanConnection
 p = C/n
 
 SubSaveDirName = (SaveDirName +
-    "/C_%d"%(C))
+    "/C_%0.3f"%(C))
 
 if not os.path.isdir(SubSaveDirName):
     os.mkdir(SubSaveDirName)
