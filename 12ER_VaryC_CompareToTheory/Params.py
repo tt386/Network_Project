@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 n = 1000#1000
 
 #Mean number of connections
-CList = np.linspace(1,10,100)#np.arange(2,41)#np.linspace(2,n/10,100).astype(int)#[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+CList = np.linspace(1,10,50)#np.arange(2,41)#np.linspace(2,n/10,100).astype(int)#[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
 """
 #Corresponding edge probability
@@ -27,7 +27,7 @@ P = 0.05#0.025#50/n
 T = 2000000#00
 
 #Fitness of the mutant
-F = 0.9#8
+F = 0.9#9#8
 
 
 Repeats = 20

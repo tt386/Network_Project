@@ -3,7 +3,7 @@ from Params import *
 import sys
 sys.path.insert(0,'../CoreFunctions')
 
-from Core import Initialise, Iterate,  Observe, MeasureMutants, Plot
+from Core import Init, Initialise, Iterate,  Observe, MeasureMutants, Plot, GraphStats
 
 import time
 
@@ -12,25 +12,34 @@ starttime = time.time()
 
 #positions, CompleteGraph, RandomGraph, InactivePatchIDs = Initialise(n,p,PNum)
 
-InitDict = Initialise(n,p,P)
+InitDict = Init(GraphDict)
 
 PNum = InitDict["PNum"]
 
 ParamsDict = {
-        "Graph":InitDict["RandomGraph"],
+        "Graph":InitDict["Graph"],
         "InactivePatchIDs":InitDict["InactivePatchIDs"],
         "MNum":InitDict["MNum"],
         "F":F}
 
 
 ObserveDict = {
-        "Graph":InitDict["RandomGraph"],
+        "Graph":InitDict["Graph"],
         "positions":InitDict["positions"],
         "SaveDirName":os.path.abspath(SaveDirName)
         }
 
 
 GraphSize = InitDict["NodeNum"]
+
+StatDict = GraphStats(ParamsDict["Graph"])
+print("MeanClusterCoeff:",StatDict["MeanClusterCoeff"])
+print("degree list:",StatDict["deg_list"])
+print("degree list counts",StatDict["deg_cnt_list"])
+
+print("Mean degree:",np.sum(StatDict["deg_list"]*StatDict["deg_cnt_list"])/sum(StatDict["deg_cnt_list"]))
+print("Graph Size:",StatDict["GraphSize"])
+
 
 MNumList = []
 ZealotInvadedTime = []
@@ -64,7 +73,7 @@ for t in range(T):
 
         #Observe(t,RandomGraph,positions,os.path.abspath(SaveDirName))
         Observe(ObserveDict)
-        print("Number of Mutants:", MeasureMutants(ParamsDict["Graph"])) 
+        print("Proportion of Mutants:", MeasureMutants(ParamsDict["Graph"])/StatDict["GraphSize"]) 
 
 #print(MNumList)
 

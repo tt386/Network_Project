@@ -17,14 +17,14 @@ shutil.copy("Params.py",SaveDirName)
 
 
 # Maximum number of concurrent threads
-max_threads = 20
+max_threads = 40
 
 # Lock to synchronize thread access
 lock = threading.Lock()
 
 # Function to execute a command
-def execute_command(C):
-    command = ['nice', '-n', '18', 'python', 'Script.py', '-C', str(C)]
+def execute_command(r):
+    command = ['nice', '-n', '18', 'python', 'Script.py', '-r', str(r)]
     with lock:
         print("Executing:", command)
     subprocess.Popen(command).wait()
@@ -33,13 +33,13 @@ def execute_command(C):
 threads = []
 
 # Iterate over the CList
-for C in CList:
+for r in rlist:
     # Wait until a thread is available
     while len(threads) >= max_threads:
         threads = [thread for thread in threads if thread.is_alive()]
 
     # Create a new thread and start executing the command
-    thread = threading.Thread(target=execute_command, args=(C,))
+    thread = threading.Thread(target=execute_command, args=(r,))
     thread.start()
     threads.append(thread)
 

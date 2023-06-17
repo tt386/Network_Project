@@ -139,6 +139,140 @@ def Initialise(n,p,P):
     return InitDict#positions, CompleteGraph, RandomGraph, InactivePatchIDs
 
 
+def Init(GraphDict):
+    n = GraphDict["N"]
+    P = GraphDict["P"]
+    Type = GraphDict["Type"]
+    SingleActive = GraphDict["SingleActive"]
+
+    #Create the graphs themselves
+    if Type == "ER":
+        p = GraphDict["p"]
+        Graph = nx.gnp_random_graph(n, p, seed=None, directed=False)
+
+    elif Type == "SmallWorld":
+        k = GraphDict["k"]
+        r = GraphDict["r"]
+        t = GraphDict["t"]
+        Graph = nx.connected_watts_strogatz_graph(n,k,r,t,seed=None)
+
+    elif Type == "Geometric":
+        radius = GraphDict["radius"]
+        Graph = nx.random_geometric_graph(n,radius)
+
+    elif Type == "Geometric_Torus":
+        radius = GraphDict["radius"]
+        Graph = nx.random_geometric_graph(n,radius)
+
+        for node1 in Graph.nodes():
+            n1x,n1y = Graph.nodes[node1]["pos"]
+            #print(node1,n1x,n1y)
+            
+            for node2 in range(node1+1,len(Graph.nodes())):
+                n2x,n2y = Graph.nodes[node2]["pos"]
+                #print(node1,node2)
+
+                edge_added = False
+                for x in (-1,0,1):
+                    for y in (-1,0,1):
+                        dist = np.sqrt((n1x-n2x+x)**2 + (n1y-n2y+y)**2)
+                        if dist <= radius:
+                            Graph.add_edge(node1,node2)
+                            edge_added = True
+                            #print("Added:",(node1,node2))
+                            #print((n1x,n1y),(n2x,n2y))
+                            break
+                    if edge_added:
+                        break
+    else:
+        raise Exception("Graph Improperly Defined")
+
+
+    
+    ####################
+    #Isolate the largest component of the Graph
+    LargestComponent = max(nx.connected_components(Graph), key=len)
+
+    Nodes = set(Graph.nodes())
+
+    Difference = Nodes - LargestComponent
+
+
+    for i in Difference:
+        Graph.remove_node(i)
+    #####################
+    
+
+    Nodes = Graph.nodes()
+
+    NodeNum = Graph.number_of_nodes()
+
+    #positions = nx.spring_layout(Graph)#[]
+
+    if Type == "SmallWorld":
+        positions = nx.circular_layout(Graph)
+
+    if Type == "Geometric" or "Geometric_Torus":
+        positions = {node: data["pos"] for node, data in Graph.nodes(data=True)}
+        #positions = nx.kamada_kawai_layout(Graph)
+
+    else:
+        positions = nx.spring_layout(Graph)
+
+    CompleteGraph = 0
+    MList = []
+    SepList = []
+
+    #Set patches and infections
+    NodesPlaced = 0
+    InactivePatchIDs = []
+
+    MNum = 0
+
+    #Number of patches
+    PNum = np.round(P * NodeNum).astype(int)
+
+    #Choose the IDs of the zealots
+    ZList = random.sample(range(0,NodeNum),PNum)
+
+    for i in Nodes:#RandomGraph.nodes(data=True):
+        if i in ZList:
+            Graph.nodes(data=True)[i]["patch"] = 1
+            Graph.nodes(data=True)[i]["infection"] = "M"
+            Graph.nodes(data=True)[i]["label"] = ""#"Z"
+            Graph.nodes(data=True)[i]["active"] = True
+            MNum += 1
+
+            #Make it an inactive site
+            if (NodesPlaced > 0) and SingleActive:
+                Graph.nodes(data=True)[i]["active"] = False
+                Graph.nodes(data=True)[i]["infection"] = "WT"
+                InactivePatchIDs.append(i)
+                MNum -= 1
+            MList.append(i)
+            SepList.append(0)
+
+            NodesPlaced += 1
+
+        else:
+            Graph.nodes(data=True)[i]["patch"] = 0
+            Graph.nodes(data=True)[i]["infection"] = "WT"
+            Graph.nodes(data=True)[i]["label"] = ""
+
+
+    InitDict = {
+            "positions":positions,
+            "CompleteGraph":CompleteGraph,
+            "Graph":Graph,
+            "InactivePatchIDs":InactivePatchIDs,
+            "MNum":MNum,
+            "NodeNum":NodeNum,
+            "PNum":PNum}
+
+    return InitDict#positions, CompleteGraph, RandomGraph, InactivePatchIDs
+
+
+
 
 
 
@@ -288,13 +422,16 @@ def Observe(ObserveDict):#(t,Graph,positions,SaveDirName):
     for i in Graph.nodes(data=True):
         color = None
         if i[1]["infection"]=="WT":
-            color = "blue"
+            color = "#94d2e5"
         else:
-            color = "red"
+            color = "#cc657f"
 
         if i[1]["patch"]  and not i[1]["active"]:
-            color = "white"
-        
+            color = "#CCCCCC"
+       
+        if i[1]["patch"] and i[1]["active"]:
+            color = "#99324c"
+
         colorlist.append(color)
 
 
@@ -302,7 +439,7 @@ def Observe(ObserveDict):#(t,Graph,positions,SaveDirName):
             positions,
             labels=labels,
             node_color=colorlist,
-            node_size=100#['blue' if i[1]["infection"]=="WT" else 'red' for  i in Graph.nodes(data=True)]
+            node_size=50#100#['blue' if i[1]["infection"]=="WT" else 'red' for  i in Graph.nodes(data=True)]
             )
 
     print("MADE")
@@ -383,5 +520,44 @@ def Plot(PlotDict):
     plt.plot(PlotDict["xlist"],PlotDict["ylist"])
     plt.savefig(PlotDict["SaveDirName"] + PlotDict["FigName"])
     plt.close()
+
+def GraphStats(Graph):
+    import collections
+
+    ###############################################
+    #Find the Graph size
+    GraphSize = Graph.number_of_nodes()
+    ################################################
+
+    ################################################
+    #Find the mean Graph Clustering Coefficient
+    MeanClusterCoeff = nx.average_clustering(Graph)
+    ################################################
+
+    ################################################
+    #Find the Graph Degree Distribution
+    degree_sequence = sorted([d for n, d in Graph.degree()], reverse=True)  # degree sequence
+    degreeCount = collections.Counter(degree_sequence)
+    deg, deg_cnt = zip(*degreeCount.items())
+    ################################################
+
+    deg = np.asarray(deg)
+    deg_cnt = np.asarray(deg_cnt)
+
+    ################################################
+    #Use above to find Mean Graph Degree Distribution
+    MeanDegree = np.sum(deg*deg_cnt)/sum(deg_cnt)
+    ################################################
+
+
+    StatDict = {
+            "GraphSize": GraphSize,
+            "MeanClusterCoeff": MeanClusterCoeff,
+            "deg_list": np.asarray(deg),
+            "deg_cnt_list": np.asarray(deg_cnt),
+            "MeanDegree": MeanDegree
+            }
+
+    return StatDict
 
 

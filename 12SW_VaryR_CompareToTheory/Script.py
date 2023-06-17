@@ -3,7 +3,7 @@ from Params import *
 import sys
 sys.path.insert(0,'../CoreFunctions')
 
-from Core import Initialise, Iterate,  Observe, MeasureMutants, Plot
+from Core import Init, Iterate,  Observe, MeasureMutants, Plot, GraphStats
 
 import time
 
@@ -16,25 +16,26 @@ import time
 from argparse import ArgumentParser
 parser = ArgumentParser(description='Different F and Num')
 parser.add_argument(
-        '-C',
-        '--MeanConnection',
+        '-r',
+        '--r',
         type=float,
         required=True,
-        help='Mean Number of Connection')
+        help='The radius within which nodes are connected')
 
 args = parser.parse_args()
 
-C = args.MeanConnection
-p = C/n
+r = args.r
+
+GraphDict["r"] = r
 
 SubSaveDirName = (SaveDirName +
-    "/C_%0.3f"%(C))
+    "/r_%0.3f"%(r))
 
 if not os.path.isdir(SubSaveDirName):
     os.mkdir(SubSaveDirName)
-    print("Created Directory for C",C)
+    print("Created Directory for r",r)
 
-print("Starting C: %0.3f"%(C))
+print("Starting r: %0.3f"%(r))
 
 #############################################################
 #############################################################
@@ -50,17 +51,24 @@ MNumMatrix = []
 GraphSizeList = []
 ZealotNumList = []
 
+
+#Stats about the Graphs
+deg_listList = []
+deg_cnt_listList = []
+MeanClusterCoeffList = []
+MeanDegreeList = []
+
 #Repeated iterations:
 
 for R in range(Repeats):
-    print("C",C,"Repeat",R)
+    print("r",r,"Repeat",R)
 
-    InitDict = Initialise(n,p,P)
+    InitDict = Init(GraphDict)
 
     PNum = InitDict["PNum"]
 
     ParamsDict = {
-            "Graph":InitDict["RandomGraph"],
+            "Graph":InitDict["Graph"],
             "InactivePatchIDs":InitDict["InactivePatchIDs"],
             "MNum":InitDict["MNum"],
             "F":F}
@@ -68,6 +76,14 @@ for R in range(Repeats):
     GraphSize = InitDict["NodeNum"]
     GraphSizeList.append(GraphSize)
     ZealotNumList.append(PNum)
+
+    #Generate statdictionary and unpack
+    StatDict = GraphStats(ParamsDict["Graph"])
+    deg_listList.append(StatDict["deg_list"])
+    deg_cnt_listList.append(StatDict["deg_cnt_list"])
+    MeanClusterCoeffList.append(StatDict["MeanClusterCoeff"])
+    MeanDegreeList.append(StatDict["MeanDegree"])    
+
 
     MNumList = []
     ZealotInvadedTime = []
@@ -101,7 +117,9 @@ print("Time Taken:",timetaken)
 OutputDatafilename = SubSaveDirName + '/datafile.npz'
 np.savez(OutputDatafilename,
     n=n,
-    C=C,
+    k=k,
+    r=r,
+    t=t,
     Repeats=Repeats,
     T=T,
     p=p,
@@ -111,6 +129,10 @@ np.savez(OutputDatafilename,
     MNumMatrix=MNumMatrix,
     GraphSizeList=GraphSizeList,
     ZealotNumList=ZealotNumList,
+    #deg_listList=deg_listList,
+    #deg_cnt_listList=deg_cnt_listList,
+    MeanClusterCoeffList=MeanClusterCoeffList,
+    MeanDegreeList=MeanDegreeList,
     timetaken=timetaken)
 
 

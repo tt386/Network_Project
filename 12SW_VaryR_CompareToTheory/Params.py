@@ -12,10 +12,10 @@ Types:
     Geometric
 """
 
-Type = "Geometric_Torus"
+Type = "SmallWorld"
 
 #number of sites
-n = 100
+n = 1000#1000
 
 
 #ER Stats
@@ -26,31 +26,40 @@ p = C/n
 
 #Small World Stats
 #Mean number of connections
-k = 4
+k = 20
 #rewiring probability
-r = 0.3
+minr = 1/n
+maxr = 1
+rnum = 40
+rlist = np.linspace(minr,maxr,rnum)
 #number of tries
 t = 100
 
 #Geometric Stats
 #radius of the sense
-radius = 0.15#np.sqrt(-(1/(np.pi*n)) * np.log(1-0.69))#1/np.sqrt(n)
+radius  = 0
+"""
+minr = 1/np.sqrt(n)
+maxr = 0.1
+rnum = 20
+radiuslist = np.linspace(minr,maxr,rnum)
+"""
 
-
-
+#General stats
+Repeats = 20
+#Whether all the patches start infected or not
 SingleActive = False
-
 #Prob of Patch 
-P = 0.3#0.4
-
+P = 0.4
 #Time taken for sim to run
-T = 10000000
-
+T = 2000000
 #Fitness of the mutant
 F = 0.5
-
 #PicTime is the time steps of the snapshorts of the system
 PicTime = T/1000
+
+
+
 
 
 
@@ -68,28 +77,22 @@ if Type == "ER":
     GraphDict["C"] = C
     GraphDict["p"] = p
 
-    SaveDirName= ("SaveFiles/ER_C_%0.3f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r"%
-                (C,n,P,F,T,SingleActive))
+    SaveDirName= ("SaveFiles/ER_C_%0.3f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d"%
+                (C,n,P,F,T,SingleActive,Repeats))
 
 elif Type == "SmallWorld":
     GraphDict["k"] = k
-    GraphDict["r"] = r
+    GraphDict["r"] = 0
     GraphDict["t"] = t
 
-    SaveDirName= ("SaveFiles/SW_k_%0.3f_r_%0.3f_t_%0.3f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r"%
-                (k,r,t,n,P,F,T,SingleActive))
+    SaveDirName= ("SaveFiles/SW_k_%0.3f_minr_%0.3f_maxr_%0.3f_rnum_%d_t_%0.3f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d"%
+                (k,minr,maxr,rnum,t,n,P,F,T,SingleActive,Repeats))
 
 elif Type == "Geometric":
-    GraphDict["radius"] = radius
+    GraphDict["radius"] = 0
 
-    SaveDirName= ("SaveFiles/Geo_radius_%0.5f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r"%
-                (radius,n,P,F,T,SingleActive))
-
-elif Type == "Geometric_Torus":
-    GraphDict["radius"] = radius
-
-    SaveDirName= ("SaveFiles/GeoTorus_radius_%0.5f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r"%
-                (radius,n,P,F,T,SingleActive))
+    SaveDirName= ("SaveFiles/Geo_minr_%0.5f_maxr_%0.5f_rnum_%d_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d"%
+                (minr,maxr,rnum,n,P,F,T,SingleActive,Repeats))
 
 
 if not os.path.isdir("SaveFiles"):
@@ -101,3 +104,4 @@ if not os.path.isdir(SaveDirName):
 
 shutil.copyfile("Params.py", SaveDirName+"/Params.py")
 shutil.copyfile("Script.py", SaveDirName+"/Script.py")
+
