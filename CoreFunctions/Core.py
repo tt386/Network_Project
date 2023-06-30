@@ -145,6 +145,11 @@ def Init(GraphDict):
     Type = GraphDict["Type"]
     SingleActive = GraphDict["SingleActive"]
 
+    LargestComponentBool = True
+    if "LargestComponent" in GraphDict:
+        LargestComponentBool = GraphDict["LargestComponent"]
+
+
     #Create the graphs themselves
     if Type == "ER":
         p = GraphDict["p"]
@@ -189,17 +194,19 @@ def Init(GraphDict):
 
 
     
-    ####################
+    ######################
     #Isolate the largest component of the Graph
-    LargestComponent = max(nx.connected_components(Graph), key=len)
+    if LargestComponentBool:
+        print("Isolate largest component only")
+        LargestComponent = max(nx.connected_components(Graph), key=len)
 
-    Nodes = set(Graph.nodes())
+        Nodes = set(Graph.nodes())
 
-    Difference = Nodes - LargestComponent
+        Difference = Nodes - LargestComponent
 
 
-    for i in Difference:
-        Graph.remove_node(i)
+        for i in Difference:
+            Graph.remove_node(i)
     #####################
     
 
@@ -550,12 +557,18 @@ def GraphStats(Graph):
     ################################################
 
 
+    ################################################
+    #Cluster dist
+    ComponentDist = [len(c) for c in sorted(nx.connected_components(Graph),key=len)]
+    ################################################
+
     StatDict = {
             "GraphSize": GraphSize,
             "MeanClusterCoeff": MeanClusterCoeff,
             "deg_list": np.asarray(deg),
             "deg_cnt_list": np.asarray(deg_cnt),
-            "MeanDegree": MeanDegree
+            "MeanDegree": MeanDegree,
+            "ComponentDist": ComponentDist
             }
 
     return StatDict

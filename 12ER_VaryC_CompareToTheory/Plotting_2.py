@@ -88,7 +88,7 @@ for d in dirlist:
         Repeats = data['Repeats']
         nodenum = data['n']
         T = data['T']
-        C = data['radius']
+        C = data['C']
         p = data['p']
         F = data['F']
         P = data['P']
@@ -181,8 +181,6 @@ for d in dirlist:
 
 print("Finished all sub-plots")
 CList,MeanList,MedianList,MeanGraphSizeList,MeanDegreeList,AbsorbingStateProb,MeanNoAbsorbList,MeanClusterCoeff = zip(*sorted(zip(CList, MeanList, MedianList,MeanGraphSizeList,MeanDegreeList,AbsorbingStateProb,MeanNoAbsorbList,MeanClusterCoeff)))
-
-CList = np.asarray(CList)
 """
 if args.all:
     plt.figure()
@@ -283,34 +281,15 @@ plt.plot(
         label='Complete Theory',
         alpha = 0.5)
 
-rconnected = np.sqrt(np.log(nodenum)/(nodenum*np.pi))
-
-plt.plot(
-        [rconnected,rconnected],
-        [0,max(EndMean)],
-        '--k',
-        linewidth=5,
-        label='Connected r',
-        alpha = 0.5)
-
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("EndState Ratio of M")
 
 plt.legend(loc='lower right')
 
 plt.grid(True)
 
-print(CList)
-print(EndNoAbsorbMean)
-
 plt.savefig(str(args.directory) +'/EndMeanWithC.png')
-plt.yscale('log')
-plt.xscale('log')
-plt.ylim(min(EndNoAbsorbMean),1)
-
-plt.savefig(str(args.directory) +'/EndMeanWithC_LOG.png')
-
 plt.close()
 
 ############################################################
@@ -331,49 +310,6 @@ plt.scatter(MeanDegreeList,EndMedian, label='Median Endstate',marker='+')
 plt.scatter(MeanDegreeList,EndNoAbsorbMean, label='Mean Endstate No Absorb',marker='D')
 
 
-smallrTheory =  P + nodenum*np.pi*CList**2 * (1-P - (1-P)**2)
-#plt.plot(np.pi * CList**2 * nodenum,EndMean,label='r squared')
-
-plt.plot(np.pi * CList**2 * nodenum,smallrTheory,label='Small r theory')
-
-
-def NumComponents(s,r):
-
-    param = np.exp(7.5)#21)
-
-    NumSizeS = nodenum * np.exp(-param * r**2)#2.02)
-
-    #Proportion of these number of size s
-    C = np.exp(-param*r**2)#1.97)
-    B = np.log(1/(1-C))#np.log(1+np.sqrt(C)) - np.log(1-C)
-    A = C*np.exp(B)
-
-
-    """
-    A = 0.5*np.exp(-np.exp(7.21)*r**1.97)#(1-np.pi*r**2)**nodenum
-    B = np.log((2+A+np.sqrt(2*A+A**2))/2)#np.log(1 + np.sqrt(A)) - np.log(1-A)
-    """
-    return NumSizeS*A*np.exp(-B*(s))
-
-slist = np.arange(1,200)#nodenum)
-
-TheoryMeanList = []
-
-for r in CList:
-    mean = 0
-    nodecount = 0
-    for s in slist:
-        nodecount += s * NumComponents(s,r)
-        mean += s * NumComponents(s,r) * (1-(1-P)**(s))
-
-    mean += (nodenum-nodecount) * P/(1-F)
-    print("r:",r,"number of nodes",nodecount)
-    TheoryMeanList.append(mean/nodenum)
-
-print("TheoryMeanList",TheoryMeanList)
-plt.plot(np.pi * CList**2 * nodenum,TheoryMeanList,color='k',label='Small r theory 2')
-
-
 plt.plot(
         [min(MeanDegreeList),max(MeanDegreeList)],
         [Theory,Theory],
@@ -382,19 +318,6 @@ plt.plot(
         label='Complete Theory',
         alpha = 0.5)
 
-
-rconnected = np.log(nodenum)
-
-plt.plot(
-        [rconnected,rconnected],
-        [0,max(EndMean)],
-        '--k',
-        linewidth=5,
-        label='Connected r',
-        alpha = 0.5)
-
-
-
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
 plt.xlabel("Mean Degree")
 plt.ylabel("EndState Ratio of M")
@@ -402,7 +325,7 @@ plt.ylabel("EndState Ratio of M")
 plt.legend(loc='lower right')
 
 plt.grid(True)
-plt.ylim(P,1)
+
 plt.savefig(str(args.directory) +'/EndMeanWithDegree.png')
 plt.close()
 
@@ -423,7 +346,7 @@ plt.plot(
         alpha = 0.5)
 
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("Mean Graph Size")
 
 plt.grid(True)
@@ -446,7 +369,7 @@ DegreeTheory[r > 0.5] = nodenum*(np.pi * r[r>0.5]**2 -2*r[r>0.5]**2 * (2*np.arcc
 plt.plot(CList,DegreeTheory,"--k")
 
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("Mean Degree")
 
 plt.grid(True)
@@ -463,7 +386,7 @@ plt.figure()
 plt.semilogy(CList,AbsorbingStateProb)
 
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("Prob of Absorbing State")
 
 plt.grid(True)
@@ -488,7 +411,7 @@ plt.plot(
         alpha = 0.5)
 
 plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("Mean Clustering Coefficient")
 
 plt.grid(True)

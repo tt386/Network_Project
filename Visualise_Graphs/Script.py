@@ -41,6 +41,8 @@ print("Mean degree:",np.sum(StatDict["deg_list"]*StatDict["deg_cnt_list"])/sum(S
 print("Graph Size:",StatDict["GraphSize"])
 
 
+print("Connected components",StatDict["ComponentDist"])
+
 MNumList = []
 ZealotInvadedTime = []
 MZealotInvadedTime = []

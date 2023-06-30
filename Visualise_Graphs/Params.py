@@ -15,7 +15,7 @@ Types:
 Type = "Geometric_Torus"
 
 #number of sites
-n = 100
+n = 1000
 
 
 #ER Stats
@@ -34,7 +34,7 @@ t = 100
 
 #Geometric Stats
 #radius of the sense
-radius = 0.15#np.sqrt(-(1/(np.pi*n)) * np.log(1-0.69))#1/np.sqrt(n)
+radius = 0.01#np.sqrt(-(1/(np.pi*n)) * np.log(1-0.69))#1/np.sqrt(n)
 
 
 
@@ -61,7 +61,8 @@ GraphDict = {
         "N":n,
         "Type":Type,
         "P":P,
-        "SingleActive":SingleActive
+        "SingleActive":SingleActive,
+        "LargestComponent": False
         }
 
 if Type == "ER":

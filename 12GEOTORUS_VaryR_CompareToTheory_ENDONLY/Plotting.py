@@ -78,105 +78,108 @@ MeanNoAbsorbList = []
 MeanClusterCoeff = []
 
 for d in dirlist:
-    filelist = os.listdir(args.directory + "/" + d)
-    for names in filelist:
-        if names.endswith(".npz"):
-            filename = names
-            print("Found File!")
+    try:
+        filelist = os.listdir(args.directory + "/" + d)
+        for names in filelist:
+            if names.endswith(".npz"):
+                filename = names
+                print("Found File!")
 
-    with np.load(os.path.join(args.directory,d,filename)) as data:
-        Repeats = data['Repeats']
-        nodenum = data['n']
-        T = data['T']
-        C = data['radius']
-        p = data['p']
-        F = data['F']
-        P = data['P']
-        MNumMatrix = data['MNumMatrix']
-        GraphSizeList=data['GraphSizeList']
-        ZealotNumList=data['ZealotNumList']
-        #deg_listList=data['deg_listList']
-        #deg_cnt_listList=data["deg_cnt_listList"]
-        MeanClusterCoeffList=data["MeanClusterCoeffList"]
-        MeanDegree=data["MeanDegreeList"]
-
-        timetaken = data['timetaken']
-        print("Time Taken:",timetaken)
-
-    MeanGraphSizeList.append(np.mean(GraphSizeList))
-    MeanDegreeList.append(np.mean(MeanDegree))
+        with np.load(os.path.join(args.directory,d,filename)) as data:
+            Repeats = data['Repeats']
+            nodenum = data['n']
+            T = data['T']
+            C = data['radius']
+            p = data['p']
+            F = data['F']
+            P = data['P']
+            MNumMatrix = data['MNumMatrix']
+            GraphSizeList=data['GraphSizeList']
+            ZealotNumList=data['ZealotNumList']
+            #deg_listList=data['deg_listList']
+            #deg_cnt_listList=data["deg_cnt_listList"]
+            MeanClusterCoeffList=data["MeanClusterCoeffList"]
+            MeanDegree=data["MeanDegreeList"]
+            DataPoints = data["DataPoints"]
 
 
-    #Create Mean List
-    """
-    MeanMNum = np.mean(MNumMatrix,axis = 0)
-    MedianMNum = np.median(MNumMatrix,axis = 0)
+            timetaken = data['timetaken']
+            print("Time Taken:",timetaken)
 
-    MeanList.append(MeanMNum/np.mean(GraphSizeList))
-    MedianList.append(MedianMNum/np.median(GraphSizeList))
-    """
-    """
-    if args.all:
-        MeanList = []
-        MedianList = []
-        AbsorbingStateProb = []
-    """
-    Ratio = np.divide(MNumMatrix,GraphSizeList[:,np.newaxis])
+        MeanGraphSizeList.append(np.mean(GraphSizeList))
+        MeanDegreeList.append(np.mean(MeanDegree))
 
-    MeanList.append(np.mean(Ratio,axis=0))
-    MedianList.append(np.median(Ratio,axis=0))
+        #Create Mean List
+        """
+        MeanMNum = np.mean(MNumMatrix,axis = 0)
+        MedianMNum = np.median(MNumMatrix,axis = 0)
 
-    #Mean Cluster Coeff
-    MeanClusterCoeff.append(np.mean(MeanClusterCoeffList))
+        MeanList.append(MeanMNum/np.mean(GraphSizeList))
+        MedianList.append(MedianMNum/np.median(GraphSizeList))
+        """
+        """
+        if args.all:
+            MeanList = []
+            MedianList = []
+            AbsorbingStateProb = []
+        """
+        Ratio = np.divide(MNumMatrix,GraphSizeList[:,np.newaxis])
 
-    #Absorbing State
-    AbsorbedNum = 0
-    for i in Ratio:
-        if i[-1] == 1:
-            AbsorbedNum += 1
-    AbsorbingStateProb.append(AbsorbedNum/len(Ratio))
+        MeanList.append(np.mean(Ratio,axis=0))
+        MedianList.append(np.median(Ratio,axis=0))
 
-    masked_matrix = np.where(Ratio == 1, np.nan,Ratio)
-    MeanNoAbsorbList.append(np.nanmean(masked_matrix,axis = 0))
+        #Mean Cluster Coeff
+        MeanClusterCoeff.append(np.mean(MeanClusterCoeffList))
 
-    CList.append(C)
+        #Absorbing State
+        AbsorbedNum = 0
+        for i in Ratio:
+            if i[-1] == 1:
+                AbsorbedNum += 1
+        AbsorbingStateProb.append(AbsorbedNum/len(Ratio))
 
-    CList = [float(value) if isinstance(value, np.ndarray) else value for value in CList]
-    MeanList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanList]
-    MedianList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MedianList]
-    MeanNoAbsorbList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanNoAbsorbList]
-    #print(CList)
-    #print(MeanList)
+        masked_matrix = np.where(Ratio == 1, np.nan,Ratio)
+        MeanNoAbsorbList.append(np.nanmean(masked_matrix,axis = 0))
 
-    #Plot each repeat for a C:
-    print("Plot C = ",C)
-    if args.all:
-        print(args.all)
+        CList.append(C)
 
-        #Figure for the number of mutants at each time point
-        x = np.arange(len(MNumMatrix[0]))#MeanMNum))
+        CList = [float(value) if isinstance(value, np.ndarray) else value for value in CList]
+        MeanList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanList]
+        MedianList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MedianList]
+        MeanNoAbsorbList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanNoAbsorbList]
+        #print(CList)
+        #print(MeanList)
 
-        plt.figure()
-        for i in range(len(MNumMatrix)):
-            plt.plot(x,MNumMatrix[i]/GraphSizeList[i])
+        #Plot each repeat for a C:
+        print("Plot C = ",C)
+        if args.all:
+            print(args.all)
 
-        plt.plot(x,MeanList[-1],color='black',linewidth=5)
+            #Figure for the number of mutants at each time point
+            x = T - DataPoints + np.arange(len(MNumMatrix[0])) #MeanMNum))
 
-        plt.plot(x,MeanNoAbsorbList[-1],color='orange',linewidth=5,label='No Absorb')
+            plt.figure()
+            for i in range(len(MNumMatrix)):
+                plt.plot(x,MNumMatrix[i]/GraphSizeList[i])
 
-        Theory = P/(1-F)
+            plt.plot(x,MeanList[-1],color='black',linewidth=5)
 
-        plt.legend(loc='upper left')
+            plt.plot(x,MeanNoAbsorbList[-1],color='orange',linewidth=5,label='No Absorb')
 
-        plt.plot([min(x),max(x)],[Theory,Theory],'--r',linewidth=5)
+            Theory = P/(1-F)
 
-        plt.title("C=%0.3f"%(C))
-        plt.savefig(str(args.directory) +'/'+str(d) +'/AllRepeats.png' )
-        plt.savefig(str(args.directory) +'/C_%0.3f_AllRepeats.png'%(C) )
+            plt.legend(loc='upper left')
 
-        plt.close()
+            plt.plot([min(x),max(x)],[Theory,Theory],'--r',linewidth=5)
 
+            plt.title("C=%0.3f"%(C))
+            plt.savefig(str(args.directory) +'/'+str(d) +'/AllRepeats.png' )
+            plt.savefig(str(args.directory) +'/C_%0.3f_AllRepeats.png'%(C) )
 
+            plt.close()
+
+    except:
+        print("Error with file")
         
 
 print("Finished all sub-plots")
