@@ -12,23 +12,25 @@ Types:
     Geometric
 """
 
-Type = "Geometric_Torus"
+Type = "ER"
 
 
-Repeats = 20#100
+Repeats = 100
 #number of sites
 n = 1000
 
 
 #ER Stats
 #Mean number of connections
-minC = 0#10
+minC = 0
 maxC = 2
 Cnum = 40
 Clist = np.linspace(minC,maxC,Cnum)
 
+
+C = 1.6#10
 #Corresponding edge probability
-#p = C/n
+p = C/n
 
 #Small World Stats
 #Mean number of connections
@@ -74,11 +76,11 @@ GraphDict = {
         }
 
 if Type == "ER":
-    GraphDict["C"] = 0
-    GraphDict["p"] = 0
+    GraphDict["C"] = C
+    GraphDict["p"] = p
 
-    SaveDirName= ("SaveFiles/ER_minC_%0.3f_maxC_%0.3f_CNum_%d_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r"%
-                (minC,maxC,Cnum,n,P,F,T,SingleActive))
+    SaveDirName= ("SaveFiles/ER_minC_%0.3f_maxC_%0.3f_Cnum_%d_NodeNum_%d_ZealotProb_%0.5f_Repeats_%d_Timesteps_%d_SingleActive_%r"%
+                (minC,maxC,Cnum,n,P,Repeats,T,SingleActive))
 
 elif Type == "SmallWorld":
     GraphDict["k"] = k

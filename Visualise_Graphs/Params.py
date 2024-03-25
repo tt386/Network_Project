@@ -12,7 +12,7 @@ Types:
     Geometric
 """
 
-Type = "Geometric_Torus"
+Type = "ER"
 
 #number of sites
 n = 1000
@@ -20,7 +20,7 @@ n = 1000
 
 #ER Stats
 #Mean number of connections
-C = 1.6#10
+C = 4
 #Corresponding edge probability
 p = C/n
 
@@ -41,7 +41,7 @@ radius = 0.01#np.sqrt(-(1/(np.pi*n)) * np.log(1-0.69))#1/np.sqrt(n)
 SingleActive = False
 
 #Prob of Patch 
-P = 0.3#0.4
+P = 0.4
 
 #Time taken for sim to run
 T = 10000000
@@ -62,7 +62,7 @@ GraphDict = {
         "Type":Type,
         "P":P,
         "SingleActive":SingleActive,
-        "LargestComponent": False
+        "LargestComponent": True#False
         }
 
 if Type == "ER":

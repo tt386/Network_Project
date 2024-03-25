@@ -20,9 +20,12 @@ n = 1000#1000
 
 #ER Stats
 #Mean number of connections
-C = 1.6#10
+minC = 0
+maxC = 10
+Cnum = 40
+CList = np.linspace(minC,maxC,Cnum)
 #Corresponding edge probability
-p = C/n
+#p = C/n
 
 #Small World Stats
 #Mean number of connections
@@ -32,24 +35,32 @@ r = 0.2
 #number of tries
 t = 100
 
+"""
 #Geometric Stats
 #radius of the sense
 minr = 0.#1/np.sqrt(n)
 maxr = 0.1#05#np.sqrt(1/2)
 rnum = 40
 radiuslist = np.linspace(minr,maxr,rnum)
+"""
+
+#Geometric stats: mean degree
+mina = 0
+maxa = 10
+anum = 40
+aList = np.linspace(mina,maxa,anum)
 
 
 #General stats
-Repeats = 20
+Repeats = 10#10#20
 #Whether all the patches start infected or not
 SingleActive = False
 #Prob of Patch 
-P = 0.8#0.08# 0.4
+PList = np.linspace(0.1,1,10)#0.08# 0.4
 #Time taken for sim to run
-T = 10000000#100000000
+T = 1000000#10000000#100000000
 #Fitness of the mutant
-F = 0.1#25
+FList = np.linspace(0.1,1,10)#0.3#25
 #Whether I just use the largest component
 LargestComponent = False
 
@@ -64,21 +75,20 @@ DataPoints = int(1e6)
 
 
 
-
 GraphDict = {
         "N":n,
         "Type":Type,
-        "P":P,
+        "P":0,
         "SingleActive":SingleActive,
         "LargestComponent":LargestComponent
         }
 
 if Type == "ER":
-    GraphDict["C"] = C
-    GraphDict["p"] = p
+    GraphDict["C"] = 0
+    GraphDict["p"] = 0
 
-    SaveDirName= ("SaveFiles/ER_C_%0.3f_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
-                (C,n,P,F,T,SingleActive,Repeats,LargestComponent))
+    SaveDirName= ("SaveFiles/ER_minC_%0.3f_maxC_%0.3f_Cnum_%d_NodeNum_%d_minZ_%0.3f_maxZ_%0.3f_Znum_%d_minF_%0.3f_maxF_%0.3f_Fnum_%d_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
+                (minC,maxC,Cnum,n,min(PList),max(PList),len(PList),min(FList),max(FList),len(FList),T,SingleActive,Repeats,LargestComponent))
 
 elif Type == "SmallWorld":
     GraphDict["k"] = k
@@ -91,15 +101,15 @@ elif Type == "SmallWorld":
 elif Type == "Geometric":
     GraphDict["radius"] = 0
 
-    SaveDirName= ("SaveFiles/Geo_minr_%0.5f_maxr_%0.5f_rnum_%d_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
-                (minr,maxr,rnum,n,P,F,T,SingleActive,Repeats,LargestComponent))
+    SaveDirName= ("SaveFiles/Geo_mina_%0.5f_maxa_%0.5f_anum_%d_NodeNum_%d_minZ_%0.3f_maxZ_%0.3f_Znum_%d_minF_%0.3f_maxF_%0.3f_Fnum_%d_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
+                (mina,maxa,anum,n,min(PList),max(PList),len(PList),min(FList),max(FList),len(FList),T,SingleActive,Repeats,LargestComponent))
 
 
 elif Type == "Geometric_Torus":
     GraphDict["radius"] = 0
 
-    SaveDirName= ("SaveFiles/GeoTorus_minr_%0.5f_maxr_%0.5f_rnum_%d_NodeNum_%d_ZealotProb_%0.5f_Fitness_%0.3f_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
-                (minr,maxr,rnum,n,P,F,T,SingleActive,Repeats,LargestComponent))
+    SaveDirName= ("SaveFiles/GeoTorus_mina_%0.5f_maxa_%0.5f_anum_%d_NodeNum_%d_minZ_%0.3f_maxZ_%0.3f_Znum_%d_minF_%0.3f_maxF_%0.3f_Fnum_%d_Timesteps_%d_SingleActive_%r_Repeats_%d_LargestComponent_%r"%
+                (mina,maxa,anum,n,min(PList),max(PList),len(PList),min(FList),max(FList),len(FList),T,SingleActive,Repeats,LargestComponent))
 
 else:
     raise Exception("Incorrect type of Graph")

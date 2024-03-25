@@ -139,7 +139,7 @@ for d in dirlist:
             #deg_cnt_listList=data["deg_cnt_listList"]
             MeanClusterCoeffList=data["MeanClusterCoeffList"]
             MeanDegree=data["MeanDegreeList"]
-            DataPoints = data["DataPoints"]
+            #DataPoints = data["DataPoints"]
 
 
             timetaken = data['timetaken']
@@ -195,7 +195,7 @@ for d in dirlist:
             print(args.all)
 
             #Figure for the number of mutants at each time point
-            x = T - DataPoints + np.arange(len(MNumMatrix[0])) #MeanMNum))
+            x = np.arange(len(MNumMatrix[0])) #MeanMNum))
 
             plt.figure()
             for i in range(len(MNumMatrix)):

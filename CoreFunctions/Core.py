@@ -13,6 +13,7 @@ import time
 import sys
 
 
+
 def Initialise(n,p,P):
     """Generates Network and key parameters of that network
 
@@ -219,7 +220,7 @@ def Init(GraphDict):
     if Type == "SmallWorld":
         positions = nx.circular_layout(Graph)
 
-    if Type == "Geometric" or "Geometric_Torus":
+    elif Type == "Geometric" or Type == "Geometric_Torus":
         positions = {node: data["pos"] for node, data in Graph.nodes(data=True)}
         #positions = nx.kamada_kawai_layout(Graph)
 

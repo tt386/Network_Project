@@ -5,12 +5,15 @@ sys.path.insert(0,'../CoreFunctions')
 
 from Core import Init, Initialise, Iterate,  Observe, MeasureMutants, Plot, GraphStats
 
+
+
 import time
 
 
 starttime = time.time()
 
 #positions, CompleteGraph, RandomGraph, InactivePatchIDs = Initialise(n,p,PNum)
+
 
 InitDict = Init(GraphDict)
 

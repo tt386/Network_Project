@@ -25,45 +25,6 @@ from itertools import chain
 
 from colour import Color
 
-
-
-
-#Funcs
-#param = np.exp(7.5)
-def NumComponents(s,r,N):
-    param = N * np.pi * 0.5
-
-    NumSizeS = nodenum * np.exp(-param * r**2)#2.02)
-
-    #Proportion of these number of size s
-    C = np.exp(-param*r**2)#1.97)
-    B = np.log(1/(1-C))#np.log(1+np.sqrt(C)) - np.log(1-C)
-    A = C*np.exp(B)
-
-
-    """
-    A = 0.5*np.exp(-np.exp(7.21)*r**1.97)#(1-np.pi*r**2)**nodenum
-    B = np.log((2+A+np.sqrt(2*A+A**2))/2)#np.log(1 + np.sqrt(A)) - np.log(1-A)
-    """
-    return NumSizeS*A*np.exp(-B*(s))
-
-
-def InfTheory(r,z,N):
-    #param = np.exp(7.5)
-    param = N * np.pi * 0.5
-
-    exp = np.exp(-param*r**2)
-
-    return 1 - (1-z)* (exp/((1-exp)*(1-z) - 1))**2
-
-
-
-
-
-
-
-
-
 starttime = time.time()
 ################################
 ##ArgParse######################
@@ -117,112 +78,105 @@ MeanNoAbsorbList = []
 MeanClusterCoeff = []
 
 for d in dirlist:
-    try:
-        filelist = os.listdir(args.directory + "/" + d)
-        for names in filelist:
-            if names.endswith(".npz"):
-                filename = names
-                print("Found File!")
+    filelist = os.listdir(args.directory + "/" + d)
+    for names in filelist:
+        if names.endswith(".npz"):
+            filename = names
+            print("Found File!")
 
-        with np.load(os.path.join(args.directory,d,filename)) as data:
-            Repeats = data['Repeats']
-            nodenum = data['n']
-            T = data['T']
-            C = data['radius']
-            p = data['p']
-            F = data['F']
-            P = data['P']
-            MNumMatrix = data['MNumMatrix']
-            GraphSizeList=data['GraphSizeList']
-            ZealotNumList=data['ZealotNumList']
-            #deg_listList=data['deg_listList']
-            #deg_cnt_listList=data["deg_cnt_listList"]
-            MeanClusterCoeffList=data["MeanClusterCoeffList"]
-            MeanDegree=data["MeanDegreeList"]
-            DataPoints = data["DataPoints"]
+    with np.load(os.path.join(args.directory,d,filename)) as data:
+        Repeats = data['Repeats']
+        nodenum = data['n']
+        T = data['T']
+        C = data['radius']
+        p = data['p']
+        F = data['F']
+        P = data['P']
+        MNumMatrix = data['MNumMatrix']
+        GraphSizeList=data['GraphSizeList']
+        ZealotNumList=data['ZealotNumList']
+        #deg_listList=data['deg_listList']
+        #deg_cnt_listList=data["deg_cnt_listList"]
+        MeanClusterCoeffList=data["MeanClusterCoeffList"]
+        MeanDegree=data["MeanDegreeList"]
 
+        timetaken = data['timetaken']
+        print("Time Taken:",timetaken)
 
-            timetaken = data['timetaken']
-            print("Time Taken:",timetaken)
-
-        MeanGraphSizeList.append(np.mean(GraphSizeList))
-        MeanDegreeList.append(np.mean(MeanDegree))
-
-        #Create Mean List
-        """
-        MeanMNum = np.mean(MNumMatrix,axis = 0)
-        MedianMNum = np.median(MNumMatrix,axis = 0)
-
-        MeanList.append(MeanMNum/np.mean(GraphSizeList))
-        MedianList.append(MedianMNum/np.median(GraphSizeList))
-        """
-        """
-        if args.all:
-            MeanList = []
-            MedianList = []
-            AbsorbingStateProb = []
-        """
-        Ratio = np.divide(MNumMatrix,GraphSizeList[:,np.newaxis])
-
-        MeanList.append(np.mean(Ratio,axis=0))
-        MedianList.append(np.median(Ratio,axis=0))
-
-        #Mean Cluster Coeff
-        MeanClusterCoeff.append(np.mean(MeanClusterCoeffList))
-
-        #Absorbing State
-        AbsorbedNum = 0
-        for i in Ratio:
-            if i[-1] == 1:
-                AbsorbedNum += 1
-        AbsorbingStateProb.append(AbsorbedNum/len(Ratio))
-
-        masked_matrix = np.where(Ratio == 1, np.nan,Ratio)
-        MeanNoAbsorbList.append(np.nanmean(masked_matrix,axis = 0))
-
-        CList.append(C)
-
-        CList = [float(value) if isinstance(value, np.ndarray) else value for value in CList]
-        MeanList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanList]
-        MedianList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MedianList]
-        MeanNoAbsorbList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanNoAbsorbList]
-        #print(CList)
-        #print(MeanList)
-
-        #Plot each repeat for a C:
-        print("Plot C = ",C)
-        if args.all:
-            print(args.all)
-
-            #Figure for the number of mutants at each time point
-            x = T - DataPoints + np.arange(len(MNumMatrix[0])) #MeanMNum))
-
-            plt.figure()
-            for i in range(len(MNumMatrix)):
-                plt.plot(x,MNumMatrix[i]/GraphSizeList[i])
-
-            plt.plot(x,MeanList[-1],color='black',linewidth=5)
-
-            plt.plot(x,MeanNoAbsorbList[-1],color='orange',linewidth=5,label='No Absorb')
-
-            CompleteTheory = P/(1-F)
-            ProbTheory = InfTheory(C,P,nodenum)
+    MeanGraphSizeList.append(np.mean(GraphSizeList))
+    MeanDegreeList.append(np.mean(MeanDegree))
 
 
-            plt.plot([min(x),max(x)],[CompleteTheory,CompleteTheory],'--r',linewidth=5,label='Complete Theory')
+    #Create Mean List
+    """
+    MeanMNum = np.mean(MNumMatrix,axis = 0)
+    MedianMNum = np.median(MNumMatrix,axis = 0)
 
-            plt.plot([min(x),max(x)],[ProbTheory,ProbTheory],'--b',linewidth=5,label='Small r Theory')
-            
-            plt.legend(loc='upper left')
+    MeanList.append(MeanMNum/np.mean(GraphSizeList))
+    MedianList.append(MedianMNum/np.median(GraphSizeList))
+    """
+    """
+    if args.all:
+        MeanList = []
+        MedianList = []
+        AbsorbingStateProb = []
+    """
+    Ratio = np.divide(MNumMatrix,GraphSizeList[:,np.newaxis])
 
-            plt.title("C=%0.3f"%(C))
-            plt.savefig(str(args.directory) +'/'+str(d) +'/AllRepeats.png' )
-            plt.savefig(str(args.directory) +'/C_%0.3f_AllRepeats.png'%(C) )
+    MeanList.append(np.mean(Ratio,axis=0))
+    MedianList.append(np.median(Ratio,axis=0))
 
-            plt.close()
+    #Mean Cluster Coeff
+    MeanClusterCoeff.append(np.mean(MeanClusterCoeffList))
 
-    except:
-        print("Error with file")
+    #Absorbing State
+    AbsorbedNum = 0
+    for i in Ratio:
+        if i[-1] == 1:
+            AbsorbedNum += 1
+    AbsorbingStateProb.append(AbsorbedNum/len(Ratio))
+
+    masked_matrix = np.where(Ratio == 1, np.nan,Ratio)
+    MeanNoAbsorbList.append(np.nanmean(masked_matrix,axis = 0))
+
+    CList.append(C)
+
+    CList = [float(value) if isinstance(value, np.ndarray) else value for value in CList]
+    MeanList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanList]
+    MedianList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MedianList]
+    MeanNoAbsorbList = [list(sublist) if isinstance(sublist, np.ndarray) else sublist for sublist in MeanNoAbsorbList]
+    #print(CList)
+    #print(MeanList)
+
+    #Plot each repeat for a C:
+    print("Plot C = ",C)
+    if args.all:
+        print(args.all)
+
+        #Figure for the number of mutants at each time point
+        x = np.arange(len(MNumMatrix[0]))#MeanMNum))
+
+        plt.figure()
+        for i in range(len(MNumMatrix)):
+            plt.plot(x,MNumMatrix[i]/GraphSizeList[i])
+
+        plt.plot(x,MeanList[-1],color='black',linewidth=5)
+
+        plt.plot(x,MeanNoAbsorbList[-1],color='orange',linewidth=5,label='No Absorb')
+
+        Theory = P/(1-F)
+
+        plt.legend(loc='upper left')
+
+        plt.plot([min(x),max(x)],[Theory,Theory],'--r',linewidth=5)
+
+        plt.title("C=%0.3f"%(C))
+        plt.savefig(str(args.directory) +'/'+str(d) +'/AllRepeats.png' )
+        plt.savefig(str(args.directory) +'/C_%0.3f_AllRepeats.png'%(C) )
+
+        plt.close()
+
+
         
 
 print("Finished all sub-plots")
@@ -343,29 +297,6 @@ plt.title("Fitness %0.3f, Zealot Ratio %0.3f"%(F,P))
 plt.xlabel("radius")
 plt.ylabel("EndState Ratio of M")
 
-
-slist = np.arange(1,200)#nodenum)
-
-TheoryMeanList = []
-InfTheoryList = []
-for r in CList:
-    mean = 0
-    nodecount = 0
-    for s in slist:
-        nodecount += s * NumComponents(s,r,nodenum)
-        mean += s * NumComponents(s,r,nodenum) * (1-(1-P)**(s))
-
-    mean += (nodenum-nodecount) * P/(1-F)
-    print("r:",r,"number of nodes",nodecount)
-    TheoryMeanList.append(mean/nodenum)
-
-    InfTheoryList.append(InfTheory(r,P,nodenum))
-
-print("TheoryMeanList",TheoryMeanList)
-plt.plot(CList,TheoryMeanList,color='k',label='Small r theory 2')
-plt.plot(CList,InfTheoryList,'--r',label='Small r Infinite Theory')
-
-
 plt.legend(loc='lower right')
 
 plt.grid(True)
@@ -405,9 +336,10 @@ smallrTheory =  P + nodenum*np.pi*CList**2 * (1-P - (1-P)**2)
 
 plt.plot(np.pi * CList**2 * nodenum,smallrTheory,label='Small r theory')
 
-"""
-param = np.exp(7.21)
+
 def NumComponents(s,r):
+
+    param = np.exp(7.5)#21)
 
     NumSizeS = nodenum * np.exp(-param * r**2)#2.02)
 
@@ -415,21 +347,18 @@ def NumComponents(s,r):
     C = np.exp(-param*r**2)#1.97)
     B = np.log(1/(1-C))#np.log(1+np.sqrt(C)) - np.log(1-C)
     A = C*np.exp(B)
+
+
+    """
+    A = 0.5*np.exp(-np.exp(7.21)*r**1.97)#(1-np.pi*r**2)**nodenum
+    B = np.log((2+A+np.sqrt(2*A+A**2))/2)#np.log(1 + np.sqrt(A)) - np.log(1-A)
+    """
     return NumSizeS*A*np.exp(-B*(s))
-
-
-def InfTheory(r,z):
-    #param = np.exp(7.5)
-    exp = np.exp(-param*r**2)
-    return 1 - (1-z)* (exp/((1-exp)*(1-z) - 1))**2
-"""
-
-"""
 
 slist = np.arange(1,200)#nodenum)
 
 TheoryMeanList = []
-InfTheoryList = []
+
 for r in CList:
     mean = 0
     nodecount = 0
@@ -441,12 +370,8 @@ for r in CList:
     print("r:",r,"number of nodes",nodecount)
     TheoryMeanList.append(mean/nodenum)
 
-    InfTheoryList.append(InfTheory(r,P))
-
 print("TheoryMeanList",TheoryMeanList)
-"""
 plt.plot(np.pi * CList**2 * nodenum,TheoryMeanList,color='k',label='Small r theory 2')
-plt.plot(np.pi * CList**2 * nodenum,InfTheoryList,'--r',label='Small r Infinite Theory')
 
 
 plt.plot(

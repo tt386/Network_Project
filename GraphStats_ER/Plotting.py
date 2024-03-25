@@ -77,12 +77,12 @@ MeanNoAbsorbList = []
 #Mean of the mean cluster coefficients
 MeanClusterCoeff = []
 
-ComponentSizeList = np.zeros(10000)
+ComponentSizeList = np.zeros(1000)
 
 ComponentNum = []
 
 s1List = []
-rlist = []
+Clist = []
 
 for d in dirlist:
     filelist = os.listdir(args.directory + "/" + d)
@@ -93,10 +93,9 @@ for d in dirlist:
 
     with np.load(os.path.join(args.directory,d,filename)) as data:
         Repeats = data['Repeats']
-        radius = data["radius"]
+        C = data["C"]
         nodenum = data['n']
         T = data['T']
-        C = data['radius']
         p = data['p']
         F = data['F']
         P = data['P']
@@ -121,79 +120,14 @@ for d in dirlist:
 
     ComponentNum.append(np.sum(Histy)/Repeats)
 
-    Histy /= Repeats
-
-    #THIS IS TO DERIVE THE PROBABILITY THAT A PARTICLE IS A MEMBER OF A S-SIZED CLUSTER. WE SEE THAT THIS IS EXPONENTIAL!!!
-    Histy= Histy*Histx/nodenum
-
-    #Plot the number of components of size s
-    # Set the figure size in millimeters
-    fig_width_mm = 45
-    fig_height_mm = 38
-    fig_size = (fig_width_mm / 25.4, fig_height_mm / 25.4)  # Convert mm to inches (25.4 mm in an inch)
-
-    fig = plt.figure(figsize=fig_size)
-    ax = fig.add_subplot(111)
-
-    plt.scatter(Histx,np.log10(Histy),marker='|',s=12,color="red",zorder=3)
-    plt.plot(Histx,np.log10(np.exp(-nodenum*np.pi*radius**2)*(1-np.exp(-nodenum*np.pi*radius**2))**(Histx-1)),'k',linewidth=3,zorder=1)
-    #plt.plot(Histx,HistTheory)
-
-    #plt.xlabel("Component Size")
-    #plt.ylabel("Number")
-
-    plt.ylim(np.log10(1/nodenum),0)#max(Histy))
-    plt.xlim(0,int((max(Histx) - max(Histx)%10)/2))#min(Histx),max(Histx))
-
-    #plt.title(r"$\alpha = %0.5f$"%(nodenum*np.pi*radius**2))
-
-
-    dx = 5
-    if max(Histx) > 20:
-        dx = 10
-
-    if max(Histx) > 70:
-        dx = 20
-
-    if max(Histx) > 120:
-        dx = 40
-
-    xticks = [0,int((max(Histx) - max(Histx)%10)/4),int((max(Histx) - max(Histx)%10)/2)]#,max(Histx) - max(Histx)%10]
-    ax.set_xticks(xticks)
-    #ax.set_xticklabels(ax.get_xticks(), rotation = 45)
-
-    yticks = [0,-1,-2,-3]
-    ax.set_yticks(yticks)
-
-
-    plt.xticks(fontsize=15,fontname = "Arial")
-    plt.yticks(fontsize=15,fontname = "Arial")
-
-    #plt.savefig(args.directory + "/" + d + "/ComponentHistList.png")
-    #plt.savefig(args.directory + "/NumSizeS_Radius_%0.5f.png"%(radius))
-
-    #plt.yscale('log')
-    plt.savefig(args.directory + "/LogNumSizeS_Radius_%0.5f.png"%(radius))
-    plt.savefig(args.directory + "/LogProbPartOfSSizedCluster_Alpha_%0.5f.png"%(nodenum*np.pi*radius**2),bbox_inches='tight',dpi=300)
-    plt.savefig(args.directory + "/LogProbPartOfSSizedCluster_Alpha_%0.5f.pdf"%(nodenum*np.pi*radius**2),bbox_inches='tight',dpi=300)
-
-    plt.xscale('log')
-    plt.savefig(args.directory + "/LogLogNumSizeS_Radius_%0.5f.png"%(radius))
-
-    plt.close()
-    
-
-
-
-    Histy = Histy/np.sum(Histy)
+    Histy = Histy/Repeats#np.sum(Histy)
 
     s1List.append(Histy[0])
-    rlist.append(radius)
+    Clist.append(C)
 
     def Prob(s,r):
 
-        #C = np.exp(-np.exp(7.21)*r**1.97)
-        C = np.exp(-np.pi*nodenum/2*r**2)
+        C = np.exp(-np.exp(7.21)*r**1.97)
         B = np.log(1/(1-C))#np.log(1+np.sqrt(C)) - np.log(1-C)
         A = C*np.exp(B)
 
@@ -204,40 +138,86 @@ for d in dirlist:
         return A*np.exp(-B*(s))
 
 
-    #A = (1-np.pi*radius**2)**nodenum
-    #B = np.log((2 + np.sqrt(4-4*(1-A)))/(2*(1-A)))#np.log(0.5*(2+A) + 0.5*np.sqrt(4*A+A**2) )#-np.log(1-A)
-    HistTheory = Prob(Histx,radius)#A * np.exp(-B*(Histx-1))
+    #HistTheory = Prob(Histx,radius)#A * np.exp(-B*(Histx-1))
+
+    def NumTreesSize_s(N,s,C):
+
+        """
+        The number of trees of size s is T. Because of the large factorials
+        we calculate log(T) and perform sums of log of the factorials. Then
+        we convert back to T.
+        """
+
+        NList = np.arange(1,N +1)
+
+        NsList = np.arange(1,N-s +1)
+
+        sList = np.arange(1,s +1)
+
+        
+        term1 = 0#np.log(N)
+        term2 = np.sum(np.log(NList))
+        term3 = np.sum(np.log(NsList))
+        term4 = np.sum(np.log(sList))
+        term5 = (s-2)* np.log(s)
+        term6 = (s-1) * np.log(C/N)
+        term7 = (special.binom(s,2) - (s-1) + s*(N-s)) * np.log(1-C/N)
+
+        tot = term1 + term2 - term3 - term4 + term5 + term6 + term7
+        
+
+        """
+        term1 = np.log(2)
+        term2 = (s-2)*np.log(s)
+        term3 = (s-1)*np.log(C)
+        term4 = -C*s
+        term5 = -np.log(2-C)
+        term6 = -np.sum(np.log(sList))
+
+        tot = term1+term2+term3+term4+term5+term6
+        """
+        output = np.exp(tot)
+        
+        return output
+
+    #HistTheory = nodenum*special.binom(nodenum,Histx) * Histx**(Histx-2) * (C/nodenum)**(Histx-1) * (1-C/nodenum)**(special.binom(Histx,2)-(Histx-1) * Histx*(nodenum-Histx))
+
+    #HistTheory = nodenum * (Histx**(Histx-2)*C**(Histx-1) * np.exp(-C*Histx))/special.factorial(Histx) * np.exp(C*(Histx**2 + 3*Histx - 2)/(2*nodenum))
+
+    HistTheory = []
+    for s in Histx:
+        HistTheory.append(NumTreesSize_s(nodenum, s,C))
+
+    #HistTheory /= sum(HistTheory)
 
     plt.figure()
     plt.scatter(Histx,Histy)
     plt.plot(Histx,HistTheory)
 
     plt.xlabel("Component Size")
-    plt.ylabel("Proportion")
+    plt.ylabel("Mean Number Per Graph")
 
-    plt.ylim(min(Histy),1)
+    plt.ylim(min(Histy),nodenum)
     plt.xlim(min(Histx),max(Histx))
 
-    plt.title("Radius: %0.5f"%(radius))
+    plt.title("C: %0.5f"%(C))
 
     plt.savefig(args.directory + "/" + d + "/ComponentHistList.png")
-    plt.savefig(args.directory + "/ComponentHistList_Radius_%0.5f.png"%(radius))
+    plt.savefig(args.directory + "/ComponentHistList_C_%0.5f.png"%(C))
 
     plt.yscale('log')
-    plt.savefig(args.directory + "/LogComponentHistList_Radius_%0.5f.png"%(radius))
-
-    plt.xscale('log')
-    plt.savefig(args.directory + "/LogLogComponentHistList_Radius_%0.5f.png"%(radius))
+    plt.savefig(args.directory + "/LogComponentHistList_C_%0.5f.png"%(C))
 
     plt.close()
 
 print(ComponentSizeList)
 
-rlist,s1List,ComponentNum = zip(*sorted(zip(rlist,s1List,ComponentNum)))
+Clist,s1List,ComponentNum = zip(*sorted(zip(Clist,s1List,ComponentNum)))
 
 s1List = np.asarray(s1List)
-rlist = np.asarray(rlist)
+Clist = np.asarray(Clist)
 
+"""
 fitx = np.log(rlist[rlist<1e-2])
 fity = np.log(abs(np.log(s1List[rlist<1e-2])))
 
@@ -258,7 +238,7 @@ intercept /= MULTFACTOR
 
 print("For s1:",slope, intercept, r, p, se)
 
-
+"""
 plt.figure()
 """
 plt.plot(rlist,abs(np.log(s1List)))
@@ -266,18 +246,18 @@ plt.plot(rlist,abs(np.log(s1List)))
 plt.plot(rlist,np.exp(intercept) * rlist**2)
 """
 
-plt.scatter(rlist, s1List)
-plt.plot(rlist, np.exp(-np.exp(intercept)*rlist**slope))
+plt.scatter(Clist, s1List)
+#plt.plot(rlist, np.exp(-np.exp(intercept)*rlist**slope))
 
-plt.xlabel("radius")
+plt.xlabel("C")
 plt.ylabel("Proportion")
 
-plt.savefig(args.directory + "/ProportionSize1.png"%(radius))
+plt.savefig(args.directory + "/ProportionSize1.png")
 
 
 plt.close()
 
-
+"""
 r = rlist[rlist<1e-2]
 r =np.delete(r,0)
 
@@ -287,8 +267,8 @@ print("second value is (log(r),logv) = ",np.log(r[1]),np.log(abs(np.log(s1List))
 
 plt.figure()
 plt.scatter(rlist,abs(np.log(s1List)))
-intercept = np.log(nodenum*0.5*np.pi)
-plt.plot(rlist,np.exp(intercept) * rlist**2)
+intercept = 7.36
+plt.plot(r,np.exp(intercept) * r**2)
 plt.yscale('log')
 plt.xscale('log')
 plt.savefig(args.directory + "/ProportionSize1_LOG.png"%(radius))
@@ -296,7 +276,7 @@ plt.savefig(args.directory + "/ProportionSize1_LOG.png"%(radius))
 plt.close()
 
 
-
+"""
 """
 fitx = np.log(rlist[rlist<2e-2])
 fity = np.log(abs(np.log(s1List[rlist<2e-2])))
@@ -311,8 +291,9 @@ fity = np.delete(fity,0)
 
 ComponentRatio = ComponentNum/nodenum
 
-cfitx = np.log(rlist[rlist<1e-2])
-cfity = np.log(abs(np.log(ComponentRatio[rlist<1e-2])))
+"""
+cfitx = np.log(rlist[rlist<2e-2])
+cfity = np.log(abs(np.log(ComponentRatio[rlist<2e-2])))
 
 cfitx =np.delete(cfitx,0)
 cfity = np.delete(cfity,0)
@@ -320,12 +301,12 @@ cfity = np.delete(cfity,0)
 slope, intercept, r, p, se = linregress(cfitx, cfity)
 
 print(slope, intercept, r, p, se)
-
-r = rlist[rlist<1e-2]
-r =np.delete(r,0)
+"""
 
 
 plt.figure()
+
+
 """
 plt.scatter(np.pi*nodenum*rlist**2,abs(np.log(ComponentRatio)))
 
@@ -334,20 +315,18 @@ plt.plot(np.pi*nodenum*rlist**2, np.exp(intercept) * rlist**2)#np.exp(-np.exp(in
 plt.xlabel("Mean Neighbour Num")
 plt.ylabel("abs(log(Component Ratio))")
 """
-plt.scatter(rlist,ComponentNum)
-plt.plot(rlist, nodenum * np.exp(-np.exp(intercept) * rlist**2))
-plt.xlabel("radius")
-plt.ylabel("Component Ratio")
+plt.scatter(Clist,ComponentNum)
+
+#plt.plot(rlist, nodenum * np.exp(-np.exp(intercept) * rlist**2))
+
+plt.xlabel("C")
+plt.ylabel("Component Number")
+
+
+#plt.yscale('log')
+#plt.xscale('log')
+
 plt.savefig(args.directory + "/MeanComponentNumber.png")
-plt.close()
-
-plt.figure()
-plt.scatter(rlist, abs(np.log(ComponentRatio)))
-
-intercept = np.log(nodenum*0.5*np.pi)
-plt.plot(rlist,np.exp(intercept) * rlist**2)
-plt.xlabel("radius")
-plt.ylabel("abs(log(Component Ratio))")
 plt.yscale('log')
 plt.xscale('log')
 plt.savefig(args.directory + "/MeanComponentNumber_LOG.png")
