@@ -151,7 +151,7 @@ def Single_Plot(directory,Prev_directory,ALL):
         #Plot each repeat for a C:
         print("Plot C = ",C)
         if ALL:
-            print(args.ALL)
+            #print(args.ALL)
 
             #Figure for the number of mutants at each time point
             x = np.arange(len(MNumMatrix[0]))#MeanMNum))
@@ -504,8 +504,73 @@ def Single_Plot(directory,Prev_directory,ALL):
     plt.close()
 
 
+    ############################################################
+    #######
+    #Only show C<1 and long term prediction
+
+    #Figure plot
+
+    # Set the figure size in millimeters
+    fig_width_mm = 45
+    fig_height_mm = 45
+    fig_size = (fig_width_mm / 25.4, fig_height_mm / 25.4)  # Convert mm to inches (25.4 mm in an inch)
 
 
+    fig = plt.figure(figsize=fig_size)
+    ax = fig.add_subplot(111)
+
+    #Plotting
+    TheoryList[0] = P
+    TheoryList = np.asarray(TheoryList)
+    plt.scatter(CList,EndMean, label='Mean Endstate',marker='|',s=12,color="red",zorder=4)
+    plt.plot(
+            [min(CList),max(CList)],
+            [Theory,Theory],
+            '--k',
+            linewidth=3,
+            label='Complete Theory',
+            alpha = 0.5,
+            zorder=1)
+
+
+    plt.plot(
+            [1,1],
+            [P,1],
+            '--k',
+            linewidth=1,
+            zorder=1)
+
+
+    plt.plot(CList[CList<=1.1],TheoryList[CList<=1.1],'k',label='Theory',linewidth=3,zorder=2)
+
+    #plt.plot(CList,TheoryList2,'--c',label='Theory',linewidth=3,zorder=3)
+
+    xticks = np.linspace(0,1,6)
+
+    if max(CList) ==10:
+        xticks = np.arange(0,12,2,dtype=int)
+
+    if max(CList) == 2:
+        xticks = np.linspace(0,2,6)
+
+    yticks = np.arange(P,1.1,0.1)
+
+
+    ax.set_xticks([0,1,10])#xticks)
+    ax.set_xticklabels([r'$0$',r'$1$',r'$10$'])
+
+    ax.set_yticks([P,P/(1-F),1])#yticks)
+    ax.set_yticklabels([ r'$z_W$', r'$\frac{z_W}{1-F}$',r'$1$'])
+
+    plt.ylim(P,1)#(P,1)
+    plt.xlim(0,10)
+
+    plt.xticks(fontsize=15,fontname = "Arial")
+    plt.yticks(fontsize=15,fontname = "Arial")
+    plt.savefig(str(directory) +'/Fig_EndMeanWithC_CLess1 AndComplete.png',bbox_inches='tight',dpi=300)
+    plt.savefig(str(directory) +'/Fig_EndMeanWithC_CLess1 AndComplete.pdf',bbox_inches='tight',dpi=300)
+
+    plt.close()
 
 
 
@@ -518,8 +583,8 @@ def Single_Plot(directory,Prev_directory,ALL):
 
     #EndNoAbsorbMean = []
     for i in range(len(MeanList)):
-        EndMean.append(np.mean(MeanList[i][-int(T/10):]))
-        EndMedian.append(np.mean(MedianList[i][-int(T/10):]))
+        EndMean.append(np.mean(MeanList[i][-int(T/100):]))
+        EndMedian.append(np.mean(MedianList[i][-int(T/100):]))
     #    EndNoAbsorbMean.append(np.mean(MeanNoAbsorbList[i][-int(T/10):]))
 
     plt.scatter(MeanDegreeList,EndMean, label='Mean Endstate',marker='x')
@@ -549,6 +614,8 @@ def Single_Plot(directory,Prev_directory,ALL):
     plt.close()
 
     ############################################################
+
+
 
 
     ##############################

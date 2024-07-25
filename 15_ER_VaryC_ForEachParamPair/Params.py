@@ -44,18 +44,18 @@ radiuslist = np.linspace(minr,maxr,rnum)
 
 
 #General stats
-Repeats = 20#10#20
+Repeats = 10#10#20
 #Whether all the patches start infected or not
 SingleActive = False
 
 #Prob of Patch 
-PList = np.asarray([0.005,0.001])#np.linspace(0.1,1,10)
+PList = np.asarray([0.3])#np.asarray([0.005,0.001])#np.linspace(0.1,1,10)
 
 #Time taken for sim to run
-T = 1000000#10000000#100000000
+T = 50000000#10000000#100000000
 
 #Fitness of the mutant
-FList = np.asarray([0.9,0.95,0.99])#np.linspace(0.1,1,10)
+FList = np.asarray([0.3])#np.asarray([0.9,0.95,0.99])#np.linspace(0.1,1,10)
 
 #Whether I just use the largest component
 LargestComponent = False
